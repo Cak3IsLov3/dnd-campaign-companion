@@ -1,0 +1,33 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Campaign Companion{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+</head>
+{# The CSRF header makes every HTMX request pass Django's CSRF check. #}
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<header class="site">
+  <a class="brand" href="{% url 'campaigns:list' %}">D&amp;D Campaign Companion</a>
+  {% if user.is_authenticated %}
+    <span>{{ user.username }}</span>
+    <a href="{% url 'docs' %}">API docs</a>
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="secondary tiny">Log out</button></form>
+  {% else %}
+    <a href="{% url 'login' %}">Log in</a>
+    <a href="{% url 'register' %}">Register</a>
+  {% endif %}
+</header>
+<main>
+  {% if campaign %}
+    <p class="crumbs"><a href="{% url 'campaigns:list' %}">Campaigns</a> / <a href="{% url 'campaigns:detail' campaign.pk %}">{{ campaign.name }}</a></p>
+  {% endif %}
+  {% if messages %}
+    <ul class="messages">{% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}</ul>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

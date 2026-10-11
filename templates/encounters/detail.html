@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ encounter.name }}{% endblock %}
+{% block content %}
+<div class="row spread">
+  <h1>{{ encounter.name }} <span class="badge">{{ encounter.get_status_display }}</span></h1>
+  <span class="row">
+    <a class="button" href="{% url 'encounters:tracker' campaign.pk encounter.pk %}">Initiative tracker</a>
+    <form method="post" class="inline" action="{% url 'encounters:delete' campaign.pk encounter.pk %}">{% csrf_token %}<button class="secondary" onclick="return confirm('Delete this encounter?')">Delete</button></form>
+  </span>
+</div>
+<div class="grid">
+  <section class="panel">
+    <h2>Find monsters (SRD)</h2>
+    <input type="search" name="q" placeholder="Search by name, e.g. goblin" autocomplete="off"
+           hx-get="{% url 'encounters:monster_search' campaign.pk encounter.pk %}"
+           hx-trigger="input changed delay:300ms, search" hx-target="#monster-results">
+    <div id="monster-results"></div>
+  </section>
+  <section class="panel" id="builder">
+    {% include "encounters/_builder.html" %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+<span id="visibility" class="row">
+  <span class="badge {% if session.is_visible_to_players %}on{% endif %}">{% if session.is_visible_to_players %}Visible to players{% else %}Hidden from players{% endif %}</span>
+  <button class="secondary tiny" hx-post="{% url 'campaigns:session_visibility' campaign.pk session.pk %}" hx-target="#visibility" hx-swap="outerHTML">
+    {% if session.is_visible_to_players %}Hide{% else %}Release to players{% endif %}
+  </button>
+</span>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}NPC generator{% endblock %}
+{% block content %}
+<div class="row spread">
+  <h1>NPC generator</h1>
+  <a class="button secondary" href="{% url 'npcs:tables' campaign.pk %}">Edit tables</a>
+</div>
+<section class="panel">
+  <form hx-post="{% url 'npcs:generate' campaign.pk %}" hx-target="#draft" class="row">
+    <input name="seed" placeholder="Seed (optional)" aria-label="Seed">
+    <button>New NPC</button>
+    <span class="small muted">The same seed always gives the same NPC. Locked fields survive a new roll.</span>
+  </form>
+</section>
+<section class="panel" id="draft">
+  {% include "npcs/_draft.html" %}
+</section>
+{% endblock %}

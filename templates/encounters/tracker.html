@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ encounter.name }} · tracker{% endblock %}
+{% block content %}
+<h1>{{ encounter.name }}</h1>
+{# Players poll for a live, read-only view; the DM's actions swap the panel directly. #}
+<div id="tracker" class="panel"
+     {% if not is_dm %}hx-get="{% url 'encounters:tracker_panel' campaign.pk encounter.pk %}" hx-trigger="every 3s"{% endif %}>
+  {% include "encounters/_tracker.html" %}
+</div>
+{% if is_dm %}<p><a href="{% url 'encounters:detail' campaign.pk encounter.pk %}">Back to the encounter builder</a></p>{% endif %}
+{% endblock %}

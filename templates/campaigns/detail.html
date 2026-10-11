@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.name }}{% endblock %}
+{% block content %}
+<h1>{{ campaign.name }}</h1>
+{% if campaign.description %}<p class="notes">{{ campaign.description }}</p>{% endif %}
+
+<div class="panel row">
+  {% if request.is_dm %}
+    <span>Invite code: <code class="invite">{{ campaign.invite_code }}</code></span>
+    <a class="button secondary" href="{% url 'loot:generator' campaign.pk %}">Loot generator</a>
+    <a class="button secondary" href="{% url 'npcs:generator' campaign.pk %}">NPC generator</a>
+  {% endif %}
+  <a class="button secondary" href="{% url 'vault:home' campaign.pk %}">Backstory Vault</a>
+</div>
+
+<div class="grid">
+  <section class="panel">
+    <div class="row spread">
+      <h2>{% if request.is_dm %}Player characters{% else %}Your character{% endif %}</h2>
+      <a href="{% url 'campaigns:character_create' campaign.pk %}">Add</a>
+    </div>
+    <ul class="plain">
+      {% for character in pcs %}
+        <li class="row spread">
+          <span>
+            <strong>{{ character.name }}</strong>
+            <span class="muted small">{{ character.race }} {{ character.char_class }} {{ character.level }} · HP {{ character.max_hp }} · AC {{ character.ac }}{% if request.is_dm %} · {{ character.owner|default:"no player" }}{% endif %}</span>
+          </span>
+          <span class="row">
+            <a href="{% url 'campaigns:character_edit' campaign.pk character.pk %}">Edit</a>
+            <form method="post" class="inline" action="{% url 'campaigns:character_delete' campaign.pk character.pk %}">{% csrf_token %}<button class="link" onclick="return confirm('Delete {{ character.name|escapejs }}?')">Delete</button></form>
+          </span>
+        </li>
+      {% empty %}
+        <li class="muted">No characters yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if request.is_dm %}
+  <section class="panel">
+    <div class="row spread">
+      <h2>NPCs</h2>
+      <a href="{% url 'campaigns:character_create' campaign.pk %}?npc=1">Add</a>
+    </div>
+    <ul class="plain">
+      {% for npc in npcs %}
+        <li class="row spread">
+          <span>
+            <strong>{{ npc.name }}</strong>
+            <span class="muted small">{{ npc.race }} {{ npc.char_class }}{% if npc.location %} · {{ npc.location }}{% endif %}{% if npc.faction %} · {{ npc.faction }}{% endif %}</span>
+          </span>
+          <span class="row">
+            <a href="{% url 'campaigns:character_edit' campaign.pk npc.pk %}">Edit</a>
+            <form method="post" class="inline" action="{% url 'campaigns:character_delete' campaign.pk npc.pk %}">{% csrf_token %}<button class="link" onclick="return confirm('Delete {{ npc.name|escapejs }}?')">Delete</button></form>
+          </span>
+        </li>
+      {% empty %}
+        <li class="muted">No NPCs yet. Try the NPC generator.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="panel">
+    <div class="row spread">
+      <h2>Session log</h2>
+      {% if request.is_dm %}<a href="{% url 'campaigns:session_create' campaign.pk %}">Add</a>{% endif %}
+    </div>
+    <ul class="plain">
+      {% for session in sessions %}
+        <li class="row spread">
+          <a href="{% url 'campaigns:session_detail' campaign.pk session.pk %}">Session {{ session.number }} · {{ session.date }}</a>
+          {% if request.is_dm %}<span class="badge {% if session.is_visible_to_players %}on{% endif %}">{% if session.is_visible_to_players %}Visible{% else %}Hidden{% endif %}</span>{% endif %}
+        </li>
+      {% empty %}
+        <li class="muted">No session notes {% if not request.is_dm %}released {% endif %}yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Encounters</h2>
+    <ul class="plain">
+      {% for encounter in encounters %}
+        <li class="row spread">
+          <span>
+            {% if request.is_dm %}<a href="{% url 'encounters:detail' campaign.pk encounter.pk %}">{{ encounter.name }}</a>{% else %}{{ encounter.name }}{% endif %}
+            <span class="badge {% if encounter.status == 'active' %}on{% endif %}">{{ encounter.get_status_display }}</span>
+          </span>
+          <a href="{% url 'encounters:tracker' campaign.pk encounter.pk %}">Tracker</a>
+        </li>
+      {% empty %}
+        <li class="muted">No encounters {% if not request.is_dm %}in progress{% else %}yet{% endif %}.</li>
+      {% endfor %}
+    </ul>
+    {% if request.is_dm %}
+      <form method="post" action="{% url 'encounters:create' campaign.pk %}" class="row" style="margin-top:.6rem">
+        {% csrf_token %}
+        <input name="name" placeholder="Encounter name" required>
+        <button>Create</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Members</h2>
+    <ul class="plain">
+      {% for member in members %}
+        <li class="row spread"><span>{{ member.user.username }}</span><span class="badge">{{ member.get_role_display }}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

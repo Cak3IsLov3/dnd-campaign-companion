@@ -1,0 +1,85 @@
+<div class="row spread">
+  <span>
+    <span class="badge {% if encounter.status == 'active' %}on{% endif %}">{{ encounter.get_status_display }}</span>
+    {% if encounter.status == 'active' %}<strong>Round {{ encounter.round }}</strong>{% endif %}
+  </span>
+  {% if is_dm %}
+    <span class="row" hx-target="#tracker">
+      {% if encounter.status != 'active' %}
+        <button hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'start' %}">{% if combatants %}Resume{% else %}Start{% endif %} combat</button>
+      {% else %}
+        <button hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'next' %}">Next turn</button>
+        <button class="secondary" hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'end' %}">End combat</button>
+      {% endif %}
+    </span>
+  {% endif %}
+</div>
+
+<table style="margin-top:.6rem">
+  <tr><th>Init</th><th>Name</th><th>HP</th><th>AC</th><th>Conditions</th>{% if is_dm %}<th></th>{% endif %}</tr>
+  {% for c in combatants %}
+    <tr class="{% if c.is_active_turn %}active-turn{% endif %} {% if c.hp == 0 %}down{% endif %}">
+      <td>
+        {% if is_dm %}
+          <input type="number" name="initiative" value="{{ c.initiative }}" aria-label="Initiative for {{ c.name }}"
+                 hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'initiative' %}"
+                 hx-vals='{"combatant": {{ c.pk }}}' hx-trigger="change" hx-target="#tracker">
+        {% else %}{{ c.initiative }}{% endif %}
+      </td>
+      <td>{% if c.is_active_turn %}▶ {% endif %}<strong>{{ c.name }}</strong></td>
+      <td>
+        {{ c.hp }} / {{ c.max_hp }}
+        {% if is_dm %}
+          <form class="row" hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'hp' %}" hx-target="#tracker">
+            <input type="hidden" name="combatant" value="{{ c.pk }}">
+            <input type="number" name="amount" min="0" placeholder="amt" aria-label="HP amount for {{ c.name }}" required>
+            <button class="tiny" name="mode" value="damage">Damage</button>
+            <button class="tiny secondary" name="mode" value="heal">Heal</button>
+          </form>
+        {% endif %}
+      </td>
+      <td>{{ c.ac }}</td>
+      <td>
+        {% for condition in c.conditions %}
+          <span class="badge warn">{{ condition }}{% if is_dm %}
+            <button class="link small" title="Remove" hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'condition' %}" hx-vals='{"combatant": {{ c.pk }}, "condition": "{{ condition }}"}' hx-target="#tracker" style="color:#fff">×</button>{% endif %}</span>
+        {% endfor %}
+        {% if is_dm %}
+          <select name="condition" aria-label="Add condition to {{ c.name }}"
+                  hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'condition' %}"
+                  hx-vals='{"combatant": {{ c.pk }}}' hx-trigger="change" hx-target="#tracker">
+            <option value="">+ condition</option>
+            {% for condition in conditions %}{% if condition not in c.conditions %}<option>{{ condition }}</option>{% endif %}{% endfor %}
+          </select>
+        {% endif %}
+      </td>
+      {% if is_dm %}
+        <td><button class="link small" hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'remove' %}" hx-vals='{"combatant": {{ c.pk }}}' hx-target="#tracker" hx-confirm="Remove {{ c.name }}?">Remove</button></td>
+      {% endif %}
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="muted">{% if is_dm %}Start combat to load the monsters and the party.{% else %}Combat has not started yet.{% endif %}</td></tr>
+  {% endfor %}
+</table>
+
+{% if is_dm %}
+  <details style="margin-top:.8rem">
+    <summary>Add a combatant</summary>
+    {% if absent_pcs %}
+      <form class="row" hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'add' %}" hx-target="#tracker" style="margin-top:.5rem">
+        <select name="character" required aria-label="Player character">
+          {% for pc in absent_pcs %}<option value="{{ pc.pk }}">{{ pc.name }}</option>{% endfor %}
+        </select>
+        <input type="number" name="initiative" placeholder="init" aria-label="Initiative">
+        <button class="tiny">Add player</button>
+      </form>
+    {% endif %}
+    <form class="row" hx-post="{% url 'encounters:tracker_action' campaign.pk encounter.pk 'add' %}" hx-target="#tracker" style="margin-top:.5rem">
+      <input name="name" placeholder="Name" required aria-label="Name">
+      <input type="number" name="hp" placeholder="HP" min="1" aria-label="HP">
+      <input type="number" name="ac" placeholder="AC" aria-label="AC">
+      <input type="number" name="initiative" placeholder="init" aria-label="Initiative">
+      <button class="tiny">Add custom</button>
+    </form>
+  </details>
+{% endif %}

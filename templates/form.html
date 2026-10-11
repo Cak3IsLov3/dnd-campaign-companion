@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<form method="post" class="panel stacked">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button>Save</button>
+  <a class="button secondary" href="{% if campaign %}{% url 'campaigns:detail' campaign.pk %}{% else %}{% url 'campaigns:list' %}{% endif %}">Cancel</a>
+</form>
+{% endblock %}

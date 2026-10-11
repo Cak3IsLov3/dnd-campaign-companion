@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Loot generator{% endblock %}
+{% block content %}
+<h1>Loot generator</h1>
+<div class="grid">
+  <section class="panel">
+    <h2>Roll</h2>
+    <form hx-post="{% url 'loot:roll' campaign.pk %}" hx-target="#draft" class="stacked">
+      <p><label for="cr">CR or average party level</label>
+        <input type="number" id="cr" name="cr" min="0" step="0.5" placeholder="{{ default_cr }}">
+        <span class="helptext">Empty: the encounter's total CR, or else the party's average level ({{ default_cr }}).</span></p>
+      <p><label for="encounter">Encounter (optional)</label>
+        <select id="encounter" name="encounter">
+          <option value="">None</option>
+          {% for encounter in encounters %}<option value="{{ encounter.pk }}">{{ encounter.name }}</option>{% endfor %}
+        </select></p>
+      <p><label for="seed">Seed (optional)</label>
+        <input id="seed" name="seed" placeholder="random">
+        <span class="helptext">The same seed always gives the same loot.</span></p>
+      <button>Roll loot</button>
+    </form>
+    <p class="small muted">
+      Magic item pool: {{ pool_size }} cached SRD items.
+      {% if not pool_size %}Without it, rolls only contain coins.{% endif %}
+    </p>
+    <form method="post" action="{% url 'loot:sync' campaign.pk %}">{% csrf_token %}<button class="secondary tiny">Sync magic items from the SRD</button></form>
+  </section>
+
+  <section class="panel" id="draft">
+    {% include "loot/_draft.html" %}
+  </section>
+
+  <section class="panel">
+    <h2>Rarity weights</h2>
+    <form method="post" action="{% url 'loot:weights' campaign.pk %}">
+      {% csrf_token %}
+      <table>
+        {% for rarity, weight in weights.items %}
+          <tr><td><label for="w-{{ forloop.counter }}">{{ rarity|capfirst }}</label></td>
+              <td><input type="number" min="0" id="w-{{ forloop.counter }}" name="{{ rarity }}" value="{{ weight }}"></td></tr>
+        {% endfor %}
+      </table>
+      <p class="small muted">Higher weight = rolled more often. 0 removes a rarity.</p>
+      <button class="secondary">Save weights</button>
+    </form>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Saved rolls</h2>
+  {% for roll in rolls %}
+    {% include "loot/_roll.html" with result=roll.result is_dm=True show_delete=True %}
+  {% empty %}
+    <p class="muted">Nothing saved yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

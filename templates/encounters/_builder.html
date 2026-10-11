@@ -1,0 +1,30 @@
+<h2>Monsters in this encounter</h2>
+{% if error %}<ul class="messages"><li class="error">{{ error }}</li></ul>{% endif %}
+<table>
+  <tr><th>Monster</th><th>CR</th><th>XP</th><th>Count</th></tr>
+  {% for monster in monsters %}
+    <tr>
+      <td>{{ monster.name }}</td>
+      <td>{{ monster.cr_display }}</td>
+      <td>{{ monster.xp }}</td>
+      <td>
+        <input type="number" name="count" min="0" value="{{ monster.count }}"
+               hx-post="{% url 'encounters:monster_update' campaign.pk encounter.pk monster.pk %}"
+               hx-trigger="change" hx-target="#builder" title="Set to 0 to remove">
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="muted">Search on the left and add monsters.</td></tr>
+  {% endfor %}
+</table>
+
+<h2 style="margin-top:1rem">Difficulty <span class="badge {{ result.difficulty }}">{{ result.difficulty }}</span></h2>
+{% if party_size %}
+  <p>{{ result.total_xp }} XP × {{ result.multiplier }} = <strong>{{ result.adjusted_xp }} adjusted XP</strong> for a party of {{ party_size }}.</p>
+  <p class="small muted">
+    Thresholds:
+    {% for name, xp in result.thresholds.items %}{{ name }} {{ xp }}{% if not forloop.last %} · {% endif %}{% endfor %}
+  </p>
+{% else %}
+  <p class="muted">Add player characters to the campaign to rate this encounter.</p>
+{% endif %}

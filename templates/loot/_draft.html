@@ -1,0 +1,29 @@
+<h2>Current roll</h2>
+{% if draft %}
+  <p class="small muted">Seed <code>{{ draft.seed }}</code> · CR {{ draft.cr }}</p>
+  <p><strong>Coins:</strong> {{ draft.coins.gp }} gp · {{ draft.coins.sp }} sp · {{ draft.coins.cp }} cp</p>
+  <table>
+    {% for item in draft.items %}
+      <tr>
+        <td>{{ item.name }} <span class="badge">{{ item.rarity }}</span></td>
+        <td class="row" hx-target="#draft">
+          <button class="tiny" hx-post="{% url 'loot:draft_action' campaign.pk 'reroll' forloop.counter0 %}" {% if item.locked %}disabled{% endif %}>Re-roll</button>
+          <button class="tiny secondary" hx-post="{% url 'loot:draft_action' campaign.pk 'lock' forloop.counter0 %}">{% if item.locked %}🔒 Locked{% else %}Lock{% endif %}</button>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td class="muted">No magic items this time.</td></tr>
+    {% endfor %}
+  </table>
+  <form method="post" action="{% url 'loot:save' campaign.pk %}" class="row" style="margin-top:.8rem">
+    {% csrf_token %}
+    <select name="session" aria-label="Session">
+      <option value="">Not tied to a session</option>
+      {% for session in campaign.sessions.all %}<option value="{{ session.pk }}">Session {{ session.number }}</option>{% endfor %}
+    </select>
+    <button>Save roll</button>
+  </form>
+  <p class="small muted">Locked items survive a new roll. Saved rolls linked to a session show up in its log.</p>
+{% else %}
+  <p class="muted">Roll to see loot here.</p>
+{% endif %}

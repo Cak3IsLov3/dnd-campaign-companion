@@ -1,0 +1,11 @@
+{% if error %}<p class="messages"><span class="error">{{ error }}</span></p>{% endif %}
+<ul class="plain">
+  {% for monster in results %}
+    <li class="row spread">
+      <span>{{ monster.name }}</span>
+      <button class="tiny" hx-post="{% url 'encounters:monster_add' campaign.pk encounter.pk %}" hx-vals='{"index": "{{ monster.index }}"}' hx-target="#builder">Add</button>
+    </li>
+  {% empty %}
+    {% if not error %}<li class="muted">No monsters found.</li>{% endif %}
+  {% endfor %}
+</ul>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Backstory of {{ backstory.character.name }}{% endblock %}
+{% block content %}
+<h1>Backstory of {{ backstory.character.name }}</h1>
+<form method="post" class="panel stacked">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button>Save backstory</button>
+</form>
+<section class="panel">
+  <h2>Hooks</h2>
+  <p class="small muted">People, places and events that matter to your character. Your DM always sees these.</p>
+  <ul class="plain">
+    {% for hook in hooks %}
+      <li class="row spread">
+        <span><strong>{{ hook.title }}</strong> <span class="badge">{{ hook.get_type_display }}</span><br><span class="small">{{ hook.description }}</span></span>
+        <form method="post" class="inline" action="{% url 'vault:hook_delete' campaign.pk backstory.character.pk hook.pk %}">{% csrf_token %}<button class="link small">Delete</button></form>
+      </li>
+    {% empty %}
+      <li class="muted">No hooks yet.</li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="{% url 'vault:hook_add' campaign.pk backstory.character.pk %}" class="stacked" style="margin-top:.8rem">
+    {% csrf_token %}
+    {{ hook_form.as_p }}
+    <button>Add hook</button>
+  </form>
+</section>
+{% endblock %}

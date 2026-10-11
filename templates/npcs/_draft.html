@@ -1,0 +1,23 @@
+{% if npc %}
+  <p class="small muted">Seed <code>{{ npc.seed }}</code></p>
+  <table>
+    {% for field in fields %}
+      <tr>
+        <th>{{ field.name }}</th>
+        <td>{{ field.value|default:"—" }}</td>
+        <td class="row" hx-target="#draft">
+          <button class="tiny" hx-post="{% url 'npcs:draft_action' campaign.pk 'reroll' field.name %}" {% if field.locked %}disabled{% endif %}>Re-roll</button>
+          <button class="tiny secondary" hx-post="{% url 'npcs:draft_action' campaign.pk 'lock' field.name %}">{% if field.locked %}🔒 Locked{% else %}Lock{% endif %}</button>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  <form method="post" action="{% url 'npcs:save' campaign.pk %}" class="row" style="margin-top:.8rem">
+    {% csrf_token %}
+    <input name="location" placeholder="Location (optional)" aria-label="Location">
+    <input name="faction" placeholder="Faction (optional)" aria-label="Faction">
+    <button>Save as NPC</button>
+  </form>
+{% else %}
+  <p class="muted">Press “New NPC” for a name, race, occupation, trait, secret and motivation.</p>
+{% endif %}

@@ -1,0 +1,22 @@
+<div id="roll-{{ roll.pk }}" style="margin-bottom:.8rem">
+  {% if is_dm %}
+    <div class="row spread small muted">
+      <span>{{ roll.created_at|date:"Y-m-d H:i" }} · seed <code>{{ roll.seed }}</code>{% if roll.encounter %} · {{ roll.encounter.name }}{% endif %}{% if roll.session %} · session {{ roll.session.number }}{% endif %}</span>
+      {% if show_delete %}<form method="post" class="inline" action="{% url 'loot:roll_delete' campaign.pk roll.pk %}">{% csrf_token %}<button class="link small">Delete</button></form>{% endif %}
+    </div>
+  {% endif %}
+  <ul class="plain" hx-target="#roll-{{ roll.pk }}" hx-swap="outerHTML">
+    {% if result.coins %}
+      <li class="row spread">
+        <span>{{ result.coins.gp }} gp · {{ result.coins.sp }} sp · {{ result.coins.cp }} cp</span>
+        {% if is_dm %}<button class="tiny {% if not result.coins_visible %}secondary{% endif %}" hx-post="{% url 'loot:roll_visibility' campaign.pk roll.pk 'coins' %}" {% if show_delete %}hx-vals='{"manage": "1"}'{% endif %}>{% if result.coins_visible %}Visible to players{% else %}Hidden{% endif %}</button>{% endif %}
+      </li>
+    {% endif %}
+    {% for item in result.items %}
+      <li class="row spread">
+        <span>{{ item.name }} <span class="badge">{{ item.rarity }}</span></span>
+        {% if is_dm %}<button class="tiny {% if not item.visible %}secondary{% endif %}" hx-post="{% url 'loot:roll_visibility' campaign.pk roll.pk forloop.counter0 %}" {% if show_delete %}hx-vals='{"manage": "1"}'{% endif %}>{% if item.visible %}Visible to players{% else %}Hidden{% endif %}</button>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>

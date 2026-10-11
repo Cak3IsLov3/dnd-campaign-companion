@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}NPC tables{% endblock %}
+{% block content %}
+<div class="row spread">
+  <h1>NPC tables</h1>
+  <a class="button secondary" href="{% url 'npcs:generator' campaign.pk %}">Back to the generator</a>
+</div>
+<section class="panel">
+  <h2>Add or override a row</h2>
+  <form method="post" class="row">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}<label>{{ field.label }} {{ field }} {{ field.errors }}</label>{% endfor %}
+    <button>Save row</button>
+  </form>
+  <p class="small muted">Re-entering an existing value changes its weight for this campaign only. Weight 0 disables a row. Names need a race.</p>
+</section>
+<section class="panel">
+  <table>
+    <tr><th>Category</th><th>Race</th><th>Value</th><th>Weight</th><th></th></tr>
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.category }}</td>
+        <td>{{ row.race }}</td>
+        <td>{{ row.value }}</td>
+        <td>{{ row.weight }}</td>
+        <td>
+          {% if row.own %}
+            <span class="badge on">campaign</span>
+            <form method="post" class="inline" action="{% url 'npcs:trait_delete' campaign.pk row.own.pk %}">{% csrf_token %}<button class="link small">Remove</button></form>
+          {% else %}<span class="badge">default</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Your campaigns</h1>
+<div class="grid">
+  <section class="panel">
+    <ul class="plain">
+      {% for membership in memberships %}
+        <li class="row spread">
+          <a href="{% url 'campaigns:detail' membership.campaign.pk %}">{{ membership.campaign.name }}</a>
+          <span class="badge">{{ membership.get_role_display }}</span>
+        </li>
+      {% empty %}
+        <li class="muted">You are not in a campaign yet. Start one as DM or join with an invite code.</li>
+      {% endfor %}
+    </ul>
+    <p><a class="button" href="{% url 'campaigns:create' %}">New campaign</a></p>
+  </section>
+  <section class="panel">
+    <h2>Join a campaign</h2>
+    <form method="post" action="{% url 'campaigns:join' %}" class="row">
+      {% csrf_token %}
+      {{ join_form.invite_code }}
+      <button>Join</button>
+    </form>
+    <p class="muted small">Ask your DM for the invite code.</p>
+  </section>
+</div>
+{% endblock %}

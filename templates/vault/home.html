@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Backstory Vault{% endblock %}
+{% block content %}
+<h1>Backstory Vault</h1>
+{% if not request.is_dm %}
+  <section class="panel">
+    <p class="muted">Write your character's backstory and add hooks: the people, places and events your DM can weave into the story.</p>
+    <ul class="plain">
+      {% for character in characters %}
+        <li><a href="{% url 'vault:backstory' campaign.pk character.pk %}">{{ character.name }}</a></li>
+      {% empty %}
+        <li class="muted">Create a character first.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% else %}
+  <section class="panel">
+    <h2>Unused hooks <span class="badge {% if unused_hooks %}warn{% endif %}">{{ unused_hooks|length }}</span></h2>
+    <ul class="plain">
+      {% for hook in unused_hooks %}
+        <li><strong>{{ hook.title }}</strong> <span class="badge">{{ hook.get_type_display }}</span>
+          <span class="muted small">{{ hook.backstory.character.name }} ({{ hook.backstory.character.owner|default:"no player" }})</span></li>
+      {% empty %}
+        <li class="muted">Every hook has been used at least once.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% for entry in entries %}
+    <section class="panel">
+      <h2>{{ entry.character.name }} <span class="muted small">{{ entry.character.owner|default:"no player" }}</span>
+        {% if entry.unused %}<span class="badge warn">{{ entry.unused }} unused</span>{% endif %}</h2>
+      {% if entry.text is None %}
+        <p class="muted">The player has not shared the full backstory, only the hooks.</p>
+      {% else %}
+        <details><summary>Read the backstory</summary><div class="notes">{{ entry.text|default:"Nothing written yet." }}</div></details>
+      {% endif %}
+      <table style="margin-top:.5rem">
+        {% for hook in entry.hooks %}
+          <tr>
+            <td><strong>{{ hook.title }}</strong> <span class="badge">{{ hook.get_type_display }}</span><br><span class="small">{{ hook.description }}</span></td>
+            <td>
+              {% for link in hook.links.all %}
+                <div class="small">Used {{ link.date_used }}: {{ link.target }}</div>
+              {% empty %}
+                <span class="badge warn">unused</span>
+              {% endfor %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'vault:hook_link' campaign.pk hook.pk %}" class="row">
+                {% csrf_token %}
+                <select name="target" required aria-label="Link {{ hook.title }} to">
+                  <option value="">Link to…</option>
+                  <optgroup label="NPCs">{% for npc in npcs %}<option value="npc:{{ npc.pk }}">{{ npc.name }}</option>{% endfor %}</optgroup>
+                  <optgroup label="Sessions">{% for session in sessions %}<option value="session:{{ session.pk }}">Session {{ session.number }}</option>{% endfor %}</optgroup>
+                  <optgroup label="Encounters">{% for encounter in encounters %}<option value="encounter:{{ encounter.pk }}">{{ encounter.name }}</option>{% endfor %}</optgroup>
+                </select>
+                <button class="tiny">Link</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td class="muted">No hooks yet.</td></tr>
+        {% endfor %}
+      </table>
+    </section>
+  {% empty %}
+    <p class="muted">No player characters in this campaign yet.</p>
+  {% endfor %}
+{% endif %}
+{% endblock %}

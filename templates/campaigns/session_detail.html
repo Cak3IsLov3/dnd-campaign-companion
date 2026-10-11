@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Session {{ session.number }}{% endblock %}
+{% block content %}
+<div class="row spread">
+  <h1>Session {{ session.number }} <span class="muted small">{{ session.date }}</span></h1>
+  {% if request.is_dm %}
+    <span class="row">
+      {% include "campaigns/_visibility.html" %}
+      <a class="button secondary" href="{% url 'campaigns:session_edit' campaign.pk session.pk %}">Edit</a>
+    </span>
+  {% endif %}
+</div>
+<section class="panel">
+  <h2>Notes</h2>
+  <div class="notes">{{ session.notes|default:"No notes yet." }}</div>
+</section>
+{% if loot %}
+<section class="panel">
+  <h2>Loot</h2>
+  {% for roll, result in loot %}
+    {% include "loot/_roll.html" with is_dm=request.is_dm %}
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}
