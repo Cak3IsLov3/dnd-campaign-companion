@@ -6,7 +6,19 @@ builder with difficulty rating, a live initiative tracker, a seeded loot
 generator, an NPC generator and a Backstory Vault where players record story
 hooks for the DM to use.
 
-<!-- Screenshots: add images to docs/ and link them here, e.g. ![Tracker](docs/tracker.png) -->
+![Campaign overview as the DM](docs/screenshots/campaign.jpg)
+
+## Screenshots
+
+| Encounter builder | Initiative tracker |
+| --- | --- |
+| ![Encounter builder with SRD monster search and difficulty rating](docs/screenshots/encounter-builder.jpg) | ![Initiative tracker with turn order, HP and conditions](docs/screenshots/initiative-tracker.jpg) |
+
+| Loot generator | NPC generator |
+| --- | --- |
+| ![Loot generator with a seeded roll, a locked item and rarity weights](docs/screenshots/loot-generator.jpg) | ![NPC generator with re-roll and lock per field](docs/screenshots/npc-generator.jpg) |
+
+![Backstory Vault: the DM's overview of unused hooks per player](docs/screenshots/backstory-vault.jpg)
 
 ## Features
 
